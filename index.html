@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stenography Practice App</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="app-container">
+      <header>
+        <h1>Stenography Practice App</h1>
+        <p>Build your speed and accuracy with targeted practice</p>
+      </header>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="practice">Practice</button>
+        <button class="tab-btn" data-tab="test">Testing</button>
+      </div>
+
+      <div class="tab-content" id="practice-tab">
+        <div class="settings-grid">
+          <div class="setting-group">
+            <label for="difficulty">Difficulty Level</label>
+            <select id="difficulty">
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+
+          <div class="setting-group">
+            <label for="category">Word Category</label>
+            <select id="category">
+              <option value="common">Common Words</option>
+              <option value="legal">Legal Terms</option>
+              <option value="numbers">Numbers & Dates</option>
+            </select>
+          </div>
+
+          <div class="setting-group">
+            <label for="wpm">Speed (WPM): <span id="wpm-value">60</span></label>
+            <input type="range" id="wpm" min="20" max="240" step="5" value="60">
+          </div>
+
+          <div class="setting-group">
+            <label for="duration">Duration: <span id="duration-value">60</span> seconds</label>
+            <input type="range" id="duration" min="30" max="300" step="30" value="60">
+          </div>
+
+          <div class="setting-group audio-controls">
+            <label>
+              <input type="checkbox" id="mute-toggle" checked>
+              Sound
+            </label>
+          </div>
+
+          <div class="control-buttons">
+            <button id="reset-btn" class="icon-btn">↺</button>
+            <button id="play-btn" class="icon-btn primary">▶</button>
+            <button id="skip-btn" class="icon-btn" disabled>⏭</button>
+          </div>
+        </div>
+
+        <div class="practice-area">
+          <div class="progress-container">
+            <div class="progress-info">
+              <span>Progress</span>
+              <span id="timer">00:00 / 01:00</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress" id="progress-indicator"></div>
+            </div>
+          </div>
+
+          <div id="practice-display" class="hidden">
+            <h2>Current Word:</h2>
+            <div id="current-word" class="word-display"></div>
+
+            <div class="coming-up">
+              <h3>Coming Up:</h3>
+              <div id="next-words" class="next-words-container"></div>
+            </div>
+
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <p class="metric-label">WPM</p>
+                <p id="wpm-metric" class="metric-value">0</p>
+              </div>
+              <div class="metric-card">
+                <p class="metric-label">Words</p>
+                <p id="words-metric" class="metric-value">0/0</p>
+              </div>
+              <div class="metric-card">
+                <p class="metric-label">Accuracy</p>
+                <p id="accuracy-metric" class="metric-value">100%</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="results-container" class="hidden">
+            <h2>Session Results</h2>
+            <div class="results-content">
+              <p><strong>Duration:</strong> <span id="result-duration">00:00</span></p>
+              <p><strong>Words Completed:</strong> <span id="result-words">0</span></p>
+              <p><strong>Words Per Minute:</strong> <span id="result-wpm">0</span></p>
+              <p><strong>Accuracy:</strong> <span id="result-accuracy">100%</span></p>
+
+              <div class="assessment">
+                <h3>Performance Assessment:</h3>
+                <p id="performance-text">Complete a session to see your assessment.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content hidden" id="test-tab">
+        <div class="settings-grid">
+          <div class="setting-group">
+            <label for="test-type">Test Type</label>
+            <select id="test-type">
+              <option value="literary">Literary (180 WPM)</option>
+              <option value="juryCharge">Jury Charge (200 WPM)</option>
+              <option value="testimony">Testimony (225 WPM)</option>
+            </select>
+          </div>
+
+          <div class="setting-group">
+            <label for="test-duration">Test Duration</label>
+            <select id="test-duration">
+              <option value="1">1 Minute</option>
+              <option value="3">3 Minutes</option>
+              <option value="5" selected>5 Minutes (Certification)</option>
+            </select>
+          </div>
+
+          <div class="setting-group">
+            <button id="begin-test-btn" class="full-width-btn">Begin Certification Test</button>
+          </div>
+        </div>
+
+        <div class="certification-info">
+          <h2>RPR Certification Requirements</h2>
+          <div class="cert-details">
+            <div class="cert-item">
+              <h3>Literary - 180 WPM (5 Minutes)</h3>
+              <p>Material consisting of non-technical subject matter with minimal punctuation, like magazine articles or newspaper content.</p>
+            </div>
+
+            <div class="cert-item">
+              <h3>Jury Charge - 200 WPM (5 Minutes)</h3>
+              <p>Material consisting of instructions read by a judge to a jury, with formal language and legal terminology.</p>
+            </div>
+
+            <div class="cert-item">
+              <h3>Testimony - 225 WPM (5 Minutes)</h3>
+              <p>Material consisting of question and answer dialogue, like that found in depositions and court proceedings.</p>
+            </div>
+
+            <div class="cert-item">
+              <p><strong>Passing Requirement:</strong> 95% accuracy on all three tests</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-sample">
+          <h2>Test Sample</h2>
+          <div class="sample-content">
+            Ladies and gentlemen of the jury, you must consider all evidence presented during this trial and make your decision based solely on the facts. The burden of proof rests with the prosecution, who must demonstrate beyond reasonable doubt that the defendant committed the alleged crime.
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <p>Practice regularly to build muscle memory and speed. Aim for at least 15-30 minutes daily for best results.</p>
+      </footer>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
