@@ -321,10 +321,122 @@ let currentWords = [];
 let wordsCompleted = 0;
 let accuracy = 100;
 
-// Initialize audio
-const tickSound = new Audio(
-  "data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU..."
-); // Base64 audio data would go here
+// Local storage functions
+function saveSettings() {
+  const settings = {
+    difficulty: difficultySelect.value,
+    category: categorySelect.value,
+    wpm: practiceWpm,
+    duration: totalTime,
+    isMuted: isMuted,
+  };
+
+  localStorage.setItem("stenoAppSettings", JSON.stringify(settings));
+}
+
+function loadSettings() {
+  const savedSettings = localStorage.getItem("stenoAppSettings");
+  if (savedSettings) {
+    const settings = JSON.parse(savedSettings);
+
+    difficultySelect.value = settings.difficulty || "beginner";
+    categorySelect.value = settings.category || "common";
+    wpmSlider.value = settings.wpm || 60;
+    wpmValue.textContent = settings.wpm || 60;
+    practiceWpm = settings.wpm || 60;
+    durationSlider.value = settings.duration || 60;
+    durationValue.textContent = settings.duration || 60;
+    totalTime = settings.duration || 60;
+    muteToggle.checked = !settings.isMuted;
+    isMuted = settings.isMuted;
+  }
+}
+
+function saveProgress() {
+  const progress = {
+    lastSessionDate: new Date().toISOString(),
+    totalWordsPracticed: wordsCompleted,
+    highestWpm: Math.max(
+      calculateWpm(),
+      parseInt(localStorage.getItem("highestWpm") || 0)
+    ),
+    recentAccuracy: accuracy,
+  };
+
+  localStorage.setItem("stenoAppProgress", JSON.stringify(progress));
+  localStorage.setItem("highestWpm", progress.highestWpm);
+}
+
+// Save settings when they change
+difficultySelect.addEventListener("change", saveSettings);
+categorySelect.addEventListener("change", saveSettings);
+wpmSlider.addEventListener("change", saveSettings);
+durationSlider.addEventListener("change", saveSettings);
+muteToggle.addEventListener("change", saveSettings);
+
+// Save progress when session ends
+function endPracticeSession() {
+  pausePracticeSession();
+  skipBtn.disabled = true;
+
+  // Save progress
+  saveProgress();
+
+  // Show results
+  practiceDisplay.classList.add("hidden");
+  resultsContainer.classList.remove("hidden");
+
+  // Update results
+  resultDuration.textContent = formatTime(elapsedTime);
+  resultWords.textContent = wordsCompleted;
+  resultWpm.textContent = calculateWpm();
+  resultAccuracy.textContent = `${accuracy}%`;
+
+  // Performance assessment
+  const wpm = calculateWpm();
+  if (wpm < 60) {
+    performanceText.textContent =
+      "Keep practicing! Try to build speed by focusing on common words and phrases.";
+  } else if (wpm < 120) {
+    performanceText.textContent =
+      "Good progress! Continue working on pattern recognition and brief forms.";
+  } else if (wpm < 180) {
+    performanceText.textContent =
+      "Great work! You're approaching professional speeds. Focus on maintaining accuracy.";
+  } else {
+    performanceText.textContent =
+      "Excellent! You're performing at certification-level speeds. Keep refining your technique.";
+  }
+}
+
+// Load settings and progress on page load
+document.addEventListener("DOMContentLoaded", () => {
+  loadSettings();
+  updateTimerDisplay();
+});
+
+function createTickSound() {
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+  return {
+    play: function () {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.value = 800;
+      gainNode.gain.value = 0.1;
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.05);
+    },
+  };
+}
+
+const tickSound = createTickSound();
 
 // Tab switching
 tabBtns.forEach((btn) => {
@@ -550,6 +662,81 @@ playBtn.addEventListener("click", () => {
 });
 
 skipBtn.addEventListener("click", endPracticeSession);
+
+// Add this after the existing functions
+
+// Map from letters to steno key combinations
+const letterToStenoMapping = {
+  a: ["A"],
+  b: ["P", "W"],
+  c: ["K", "R"],
+  d: ["T", "K"],
+  e: ["E"],
+  f: ["T", "P"],
+  g: ["T", "K", "P", "W"],
+  h: ["H"],
+  i: ["E", "U"],
+  j: ["S", "K", "W", "R"],
+  k: ["K"],
+  l: ["H", "R"],
+  m: ["P", "H"],
+  n: ["T", "P", "H"],
+  o: ["O"],
+  p: ["P"],
+  q: ["K", "W"],
+  r: ["R"],
+  s: ["S"],
+  t: ["T"],
+  u: ["U"],
+  v: ["S", "R"],
+  w: ["W"],
+  x: ["K", "P"],
+  y: ["K", "W", "R"],
+  z: ["S", "T", "K", "P", "W", "R"],
+};
+
+// Highlight steno keys for the current word
+function highlightStenoKeys(word) {
+  // Reset all keys
+  const stenoKeys = document.querySelectorAll(".steno-key");
+  stenoKeys.forEach((key) => key.classList.remove("active"));
+
+  if (!word) return;
+
+  // Convert word to lowercase
+  const lowerWord = word.toLowerCase();
+
+  // Highlight keys for the first letter only (simplified approach)
+  if (lowerWord.length > 0) {
+    const firstLetter = lowerWord[0];
+    const keysToHighlight = letterToStenoMapping[firstLetter] || [];
+
+    keysToHighlight.forEach((letter) => {
+      const keys = document.querySelectorAll(
+        `.steno-key[data-letter="${letter}"]`
+      );
+      keys.forEach((key) => key.classList.add("active"));
+    });
+  }
+}
+
+// Now modify the updateWordDisplay function to include highlighting
+function updateWordDisplay() {
+  const currentWord = currentWords[0] || "";
+  currentWordDisplay.textContent = currentWord;
+  highlightStenoKeys(currentWord);
+
+  // Update next words
+  nextWordsContainer.innerHTML = "";
+  for (let i = 1; i <= 4; i++) {
+    if (currentWords[i]) {
+      const wordSpan = document.createElement("span");
+      wordSpan.className = "next-word";
+      wordSpan.textContent = currentWords[i];
+      nextWordsContainer.appendChild(wordSpan);
+    }
+  }
+}
 
 // Initialize
 updateTimerDisplay();
